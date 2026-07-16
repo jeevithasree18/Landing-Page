@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bolly — Knock Out Flakes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Dancing+Script:wght@600;700&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple: #6a4fd9;
+    --purple-dark: #4a3aa8;
+    --purple-darker: #392c85;
+    --ink: #12111a;
+    --bg: #e7e6ea;
+    --lime: #d6e84a;
+    --white: #ffffff;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  body{
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .bolly-wrap{
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 40px 60px;
+  }
+
+  /* ---------- HEADER ---------- */
+  .bolly-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .bolly-logo{
+    font-family:'Archivo Black', sans-serif;
+    font-style: italic;
+    font-size: 24px;
+    letter-spacing: -0.5px;
+  }
+
+  .bolly-nav{
+    display:flex;
+    gap: 6px;
+    background: linear-gradient(135deg, #8266e3, #7250da);
+    padding: 8px 10px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+  }
+
+  .bolly-nav a{
+    text-decoration:none;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+    transition: background .2s ease;
+  }
+  .bolly-nav a:hover{ background: rgba(255,255,255,0.18); }
+
+  .bolly-cart{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .cart-icon{
+    width: 38px; height:38px;
+    border-radius:50%;
+    background: var(--lime);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- HERO ---------- */
+  .bolly-hero{
+    position: relative;
+    margin-top: 40px;
+    min-height: 640px;
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items:center;
+    overflow: hidden;
+  }
+
+  .hero-glow{
+    position:absolute;
+    top: -60px; left:50%;
+    transform: translateX(-50%);
+    width: 760px; height:560px;
+    pointer-events:none;
+    z-index:0;
+  }
+  .hero-glow::before, .hero-glow::after{
+    content:'';
+    position:absolute;
+    top: 40px;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(178,155,235,0.55) 0%, rgba(178,155,235,0.18) 45%, rgba(178,155,235,0) 72%);
+    filter: blur(4px);
+  }
+  .hero-glow::before{ left: -60px; }
+  .hero-glow::after{ right: -60px; }
+
+  .hero-left{ position:relative; z-index:2; }
+
+  .badge-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom: 18px;
+  }
+  .badge-dark{
+    background: var(--ink);
+    color:#fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    border-radius: 999px;
+  }
+  .badge-purple{
+    background: var(--purple);
+    color:#fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 7px 14px;
+    border-radius: 999px;
+  }
+
+  .hero-title{
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 6vw, 74px);
+    line-height: 0.95;
+    letter-spacing: -1px;
+  }
+
+  .hero-right{
+    position: relative;
+    z-index:2;
+    text-align: right;
+    justify-self: end;
+    max-width: 240px;
+  }
+
+  .hero-right p{
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 22px;
+  }
+  .hero-right em{ font-style: italic; font-weight: 600; color: var(--purple-dark); }
+
+  .explore-btn{
+    display:inline-flex;
+    align-items:center;
+    gap: 10px;
+    background: var(--ink);
+    color:#fff;
+    border:none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 8px 8px 8px 18px;
+    border-radius: 999px;
+    cursor:pointer;
+  }
+  .explore-btn .arrow{
+    width: 26px; height:26px;
+    border-radius:50%;
+    background: var(--purple);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- 3D BOTTLE STAGE (Three.js canvas lives here, centered) ---------- */
+  .bottle-stage{
+    position: relative;
+    z-index: 1;
+    height: 560px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .bottle-stage canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    background:transparent;
+    outline:none;
+    touch-action:none;
+    cursor:grab;
+  }
+  .bottle-stage canvas:active{ cursor:grabbing; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 980px){
+    .bolly-hero{
+      grid-template-columns: 1fr;
+      text-align:center;
+      gap: 10px;
+    }
+    .hero-left, .hero-right{ justify-self:center; text-align:center; max-width: 100%; }
+    .badge-row{ justify-content:center; }
+    .bottle-stage{ order:-1; height: 420px; }
+    .hero-right{ order: 2; }
+  }
+
+  @media (max-width: 600px){
+    .bolly-wrap{ padding: 20px 18px 40px; }
+    .bolly-header{ justify-content: center; }
+    .bolly-nav{ order: 3; width:100%; justify-content:center; }
+    .bolly-nav a{ padding: 8px 10px; font-size: 12px; }
+    .hero-title{ font-size: 42px; }
+    .bottle-stage{ height: 360px; }
+    .hero-glow{ width: 380px; height: 320px; top: -20px; }
+    .hero-glow::before, .hero-glow::after{ width: 260px; height: 260px; }
+  }
+
+  @media (max-width: 340px){
+    .bolly-nav a{ padding:6px 8px; font-size: 11px; }
+    .hero-title{ font-size: 34px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bolly-wrap">
+
+  <header class="bolly-header">
+    <div class="bolly-logo">bolly</div>
+    <nav class="bolly-nav">
+      <a href="#">Shop +</a>
+      <a href="#">About</a>
+      <a href="#">Blog</a>
+      <a href="#">Contact</a>
+    </nav>
+    <div class="bolly-cart">
+      Cart
+      <div class="cart-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 8V6a5 5 0 0 1 10 0v2" stroke="#12111a" stroke-width="2" stroke-linecap="round"/><path d="M5.5 8h13l1 12.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z" stroke="#12111a" stroke-width="2" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <section class="bolly-hero">
+    <div class="hero-glow"></div>
+
+    <div class="hero-left">
+      <div class="badge-row">
+        <span class="badge-dark">FROM ROOT</span>
+        <span class="badge-purple">TO SHINE</span>
+      </div>
+      <h1 class="hero-title">KNOCK<br>OUT<br>FLAKES</h1>
+    </div>
+
+    <!-- Interactive 3D bottle, centered in the hero grid -->
+    <div class="bottle-stage" id="bottleStage">
+      <canvas id="bolly-bottle-canvas"></canvas>
+    </div>
+
+    <div class="hero-right">
+      <p>Journey in to the <em>wonderful</em> world of shampoo</p>
+      <button class="explore-btn">
+        EXPLORE MORE
+        <span class="arrow">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7V15" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </button>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+(function () {
+  const wrap   = document.getElementById("bottleStage");
+  const canvas = document.getElementById("bolly-bottle-canvas");
+
+  /* ---------- Renderer ---------- */
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance"
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.setClearColor(0x000000, 0);
+
+  /* ---------- Scene / Camera ---------- */
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  camera.position.set(0, 1.6, 5.8);
+
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  /* ---------- Lights ---------- */
+  const key = new THREE.DirectionalLight(0xffffff, 2.4);
+  key.position.set(3.5, 5, 4);
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xbfc8ff, 0.9);
+  fill.position.set(-4, 2, 2.5);
+  scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xffffff, 1.6);
+  rim.position.set(-2, 4, -5);
+  scene.add(rim);
+
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x24143f, 0.55);
+  scene.add(hemi);
+
+  /* ---------- Bottle Group ---------- */
+  const bottle = new THREE.Group();
+  scene.add(bottle);
+  bottle.rotation.z = -0.45;
+  bottle.rotation.y = 0.55;
+  bottle.rotation.x = 0.18;
+  const PURPLE = 0x6e45e2;
+
+  /* ----- Body profile (Lathe) ----- */
+  const profile = [
+    new THREE.Vector2(0.00, 0.00),
+
+    // Bottom Ring
+    new THREE.Vector2(1.18, 0.00),
+    new THREE.Vector2(1.22, 0.06),
+    new THREE.Vector2(1.24, 0.16),
+    new THREE.Vector2(1.20, 0.24),
+
+    // Straight Body
+    new THREE.Vector2(1.16, 0.40),
+    new THREE.Vector2(1.16, 2.15),
+
+    // Small shoulder
+    new THREE.Vector2(1.12, 2.30),
+    new THREE.Vector2(1.08, 2.42),
+    new THREE.Vector2(1.00, 2.52),
+
+    // Flat Top
+    new THREE.Vector2(0.92, 2.60),
+    new THREE.Vector2(0.92, 2.72),
+    new THREE.Vector2(0.92, 2.84),
+
+    // Neck
+    new THREE.Vector2(0.50, 2.84),
+    new THREE.Vector2(0.50, 3.28),
+
+    new THREE.Vector2(0.00, 3.28)
+  ];
+  const bodyGeo = new THREE.LatheGeometry(profile, 96);
+  bodyGeo.computeVertexNormals();
+
+  const bodyMat = new THREE.MeshPhysicalMaterial({
+    color: PURPLE,
+    roughness: 0.16,
+    metalness: 0.0,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.09,
+    envMapIntensity: 1.15,
+    reflectivity: 0.55
+  });
+
+  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+  bodyMesh.scale.set(1.12, 1.0, 0.82); // oval / flattened cross-section like the reference bottle
+  bodyMesh.position.y = -1.55;
+  bottle.add(bodyMesh);
+
+  /* ----- Front label (curved, transparent canvas texture) ----- */
+  function makeLabelTexture() {
+    const w = 1024, h = 1024;
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+
+    // small vertical tag block near the top-left, matching the reference bottle
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "500 20px Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.translate(35, 210);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("SCALP RESET DRIVEN", 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "600 26px Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.translate(75, 210);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("H A I R C A R E", 0, 0);
+    ctx.restore();
+
+    // "bolly" logo
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = "italic 900 190px Georgia, 'Times New Roman', serif";
+    ctx.fillText("bolly", 150, 470);
+
+    // divider line
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillRect(155, 520, 300, 4);
+
+    // "Clarify" script-ish
+    ctx.font = "italic 500 96px Georgia, 'Times New Roman', serif";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("Clarify", 155, 660);
+
+    // "Shampoo"
+    ctx.font = "700 76px Arial, sans-serif";
+    ctx.fillText("Shampoo", 155, 745);
+
+    // fine print
+    ctx.font = "500 26px Arial, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText("Scalp Reset  •  Deep Cleanse", 155, 800);
+    ctx.fillText("For Flake-Prone Scalp Types", 155, 835);
+
+    ctx.font = "600 24px Arial, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.fillText("300ml", 155, 900);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    return tex;
+  }
+
+  // radius/height/position below are derived from the body profile + bodyMesh
+  // scale above, so the label sits ON the surface of the body's straight
+  // wall instead of sinking inside it.
+  const labelTex = makeLabelTexture();
+  const labelGeo = new THREE.CylinderGeometry(
+    1.30, 1.30, 1.60, 96, 1, true,
+    Math.PI * 0.62, Math.PI * 0.78
+  );
+  const labelMat = new THREE.MeshPhysicalMaterial({
+    map: labelTex,
+    transparent: true,
+    roughness: 0.35,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.25,
+    metalness: 0.0,
+    envMapIntensity: 0.6,
+    side: THREE.FrontSide
+  });
+  const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+  labelMesh.scale.z = 0.74;
+  labelMesh.position.y = -0.275;
+  bottle.add(labelMesh);
+
+  /* ----- Neck collar / pump (white) ----- */
+  const collarMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    roughness: 0.15,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.5
+  });
+
+  /* White collar — sits on top of the neck opening */
+  const collar = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.48, 0.48, 0.28, 64),
+    collarMat
+  );
+  collar.position.y = 1.87;
+  bottle.add(collar);
+
+  /* Shaft */
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.14, 0.14, 0.72, 48),
+    collarMat
+  );
+  shaft.position.y = 2.20;
+  bottle.add(shaft);
+
+  /* Pump disc */
+  const pumpDisc = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.70, 0.70, 0.08, 64),
+    collarMat
+  );
+  pumpDisc.position.set(0, 2.54, 0);
+  pumpDisc.rotation.z = -0.30;
+  pumpDisc.rotation.x = 0.03;
+  bottle.add(pumpDisc);
+
+  /* Curved nozzle */
+  const nozzleCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.18, 2.54, 0),
+    new THREE.Vector3(0.52, 2.67, 0),
+    new THREE.Vector3(0.88, 2.70, 0),
+    new THREE.Vector3(1.18, 2.60, 0)
+  ]);
+  const nozzle = new THREE.Mesh(
+    new THREE.TubeGeometry(nozzleCurve, 80, 0.08, 24, false),
+    collarMat
+  );
+  bottle.add(nozzle);
+
+  /* Nozzle tip */
+  const tip = new THREE.Mesh(
+    new THREE.SphereGeometry(0.09, 24, 24),
+    collarMat
+  );
+  tip.position.copy(nozzleCurve.getPoint(0.99));
+  bottle.add(tip);
+
+  /* ----- soft contact shadow (fake AO) ----- */
+  const shadowTex = (function () {
+    const s = 256;
+    const c = document.createElement("canvas");
+    c.width = c.height = s;
+    const ctx = c.getContext("2d");
+    const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, "rgba(0,0,0,0.45)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, s, s);
+    return new THREE.CanvasTexture(c);
+  })();
+  const shadowMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.2, 2.0),
+    new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })
+  );
+  shadowMesh.rotation.x = -Math.PI / 2;
+  shadowMesh.position.y = -1.86;
+  bottle.add(shadowMesh);
+
+  /* ---------- Frame bottle in view ---------- */
+  bottle.position.y = 0.15;
+
+  /* ---------- Controls ---------- */
+  const controls = new OrbitControls(camera, canvas);
+  controls.target.set(0, 0.55, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enablePan = false;
+  controls.enableZoom = true;
+  controls.minDistance = 4.2;
+  controls.maxDistance = 10;
+  controls.minPolarAngle = Math.PI * 0.18;
+  controls.maxPolarAngle = Math.PI * 0.82;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.4;
+  controls.update();
+
+  let interacting = false;
+  let resumeTimer = null;
+  controls.addEventListener("start", () => { interacting = true; controls.autoRotate = false; });
+  controls.addEventListener("end", () => {
+    interacting = false;
+    clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(() => { if (!interacting) controls.autoRotate = true; }, 900);
+  });
+
+  /* ---------- Resize (responsive) ---------- */
+  function resize() {
+    const w = wrap.clientWidth || 400;
+    const h = wrap.clientHeight || 420;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  const ro = new ResizeObserver(resize);
+  ro.observe(wrap);
+  resize();
+
+  /* ---------- Render loop ---------- */
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+
+</body>
+</html>
